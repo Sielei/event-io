@@ -1,6 +1,8 @@
 package com.hs.eventio.auth;
 
 import com.hs.eventio.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@Tag(name = "Authentication", description = "Authentication API")
 @RestController
 @RequestMapping("/api/v1/auth")
 class AuthController {
@@ -21,6 +24,7 @@ class AuthController {
         this.authenticationService = authenticationService;
     }
 
+    @Operation(summary = "Register as a User", description = "Register to use the application")
     @PostMapping
     ResponseEntity<AuthDTO.RegisterUserResponse> registerUser(
             @Valid @RequestBody AuthDTO.RegisterUserRequest registerUserRequest){
@@ -31,12 +35,14 @@ class AuthController {
         return ResponseEntity.created(location).body(regUser);
     }
 
+    @Operation(summary = "Login", description = "Login to use the application")
     @PostMapping("/login")
     AuthDTO.LoginResponse login(@Valid @RequestBody AuthDTO.LoginRequest loginRequest,
                                 HttpServletRequest request){
         return authenticationService.login(loginRequest, request);
     }
 
+    @Operation(summary = "Get Password Reset Token", description = "Use a registered email address to get password reset token")
     @PostMapping("/get-reset-token")
     AuthDTO.GetResetTokenResponse sendResetToken(
             @Valid @RequestBody AuthDTO.GetResetTokenRequest getResetTokenRequest){
@@ -46,6 +52,7 @@ class AuthController {
                         + getResetTokenRequest.email());
     }
 
+    @Operation(summary = "Reset Password", description = "Use the reset token received via email to reset password")
     @PostMapping("/reset-password")
     AuthDTO.GetResetTokenResponse resetPassword(@Valid @RequestBody AuthDTO.ResetPasswordRequest resetPasswordRequest){
         authenticationService.resetPasswordWithResetToken(resetPasswordRequest);
