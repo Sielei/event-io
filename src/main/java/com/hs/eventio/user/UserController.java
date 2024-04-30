@@ -44,7 +44,7 @@ class UserController {
                                              @RequestParam("photo") MultipartFile multipartFile) {
         var fileName =fileUploadService.uploadFile(multipartFile);
         return userService.updateUserPhoto(userId, fileName, multipartFile.getContentType(),
-                "/api/v1/users/download-file/"+fileName);
+                "/api/v1/users/photo/"+fileName);
     }
 
     @Operation(summary = "Download user photo")
