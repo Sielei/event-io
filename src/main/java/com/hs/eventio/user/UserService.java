@@ -9,8 +9,6 @@ public interface UserService {
 
     AuthDTO.FindUserResponse findUserByUsername(String username);
 
-    AuthDTO.FindUserResponse findUserByEmail(String email);
-
     AuthDTO.FindUserResponse findUserByResetToken(String token);
 
     void updatePassword(AuthDTO.UpdatePasswordCommand updatePasswordCommand);
@@ -19,7 +17,10 @@ public interface UserService {
 
     void createPasswordResetToken(AuthDTO.CreatePasswordResetTokenCommand build);
 
-    AuthDTO.RegisterUserResponse updateUserPhoto(UUID userId, String fileName, String contentType, String s);
+    AuthDTO.RegisterUserResponse updateUserPhoto(UUID userId, String imageName, String imageType,
+                                                 String imageUrl);
 
     AuthDTO.RegisterUserResponse findById(UUID userId);
+
+    void updateUserDetails(UUID userId, AuthDTO.UpdateUserRequest updateUserRequest);
 }

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,13 @@ class UserController {
     @GetMapping("/{userId}")
     AuthDTO.RegisterUserResponse findUserById(@PathVariable("userId") UUID userId){
         return userService.findById(userId);
+    }
+
+    @Operation(summary = "Update user details")
+    @PutMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void updateUser(@PathVariable("userId") UUID userId, @RequestBody AuthDTO.UpdateUserRequest updateUserRequest){
+        userService.updateUserDetails(userId, updateUserRequest);
     }
 
     @Operation(summary = "Upload photo", description = "Upload user profile photo.")
