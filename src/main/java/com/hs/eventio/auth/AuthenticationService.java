@@ -61,7 +61,7 @@ class AuthenticationService {
         }
     }
     public void  generatePasswordResetToken(String email) {
-        var user = userService.findUserByEmail(email);
+        var user = userService.findUserByUsername(email);
         var token = UUID.randomUUID().toString();
         userService.createPasswordResetToken(AuthDTO.CreatePasswordResetTokenCommand.builder()
                 .userId(user.id())
@@ -89,12 +89,14 @@ class AuthenticationService {
         return new AuthDTO.RefreshToken(jwtToken);
     }
 
-    public AuthDTO.UpdatePasswordCommand generateUpdatePasswordCommand(AuthDTO.FindUserResponse userDto, AuthDTO.UpdatePasswordRequest updatePasswordRequest) {
+    public void updatePassword(UUID userId, AuthDTO.UpdatePasswordRequest updatePasswordRequest) {
+        var userDto = userService.findUserById(userId);
         if (!bCryptPasswordEncoder.matches(updatePasswordRequest.currentPassword(), userDto.password())){
             throw new PasswordValidationException("Current password does not match with the password you provided!");
         }
         var newPassword = bCryptPasswordEncoder.encode(updatePasswordRequest.newPassword());
-        return new AuthDTO.UpdatePasswordCommand(userDto.id(), newPassword);
+        var updatePasswordCommand =  new AuthDTO.UpdatePasswordCommand(userDto.id(), newPassword);
+        userService.updatePassword(updatePasswordCommand);
     }
     public AuthDTO.RegisterUserRequest encodeRawPassword(AuthDTO.RegisterUserRequest registerUserRequest){
         return new AuthDTO.RegisterUserRequest(registerUserRequest.name(), registerUserRequest.email(),
