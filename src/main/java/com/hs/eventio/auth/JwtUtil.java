@@ -1,6 +1,5 @@
 package com.hs.eventio.auth;
 
-import com.hs.eventio.user.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -14,14 +13,9 @@ import java.util.UUID;
 
 @Component
 class JwtUtil {
-    private final UserService userService;
 
     private static final String SECRET = "pYXQiOjEMsnVz5AYXJvbXMNjc2OTgyNTUzfQ";
     private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
-
-    public JwtUtil(UserService userService) {
-        this.userService = userService;
-    }
 
     public String generateJWTToken(AuthDTO.FindUserResponse userDto){
         return Jwts.builder()
@@ -53,9 +47,5 @@ class JwtUtil {
     }
     public UUID getUserIdFromJWTToken(String token){
         return UUID.fromString(getClaims(token).get("userId").toString());
-    }
-    public Instant getTokenExpiry(String jwtToken) {
-        Claims claims = getClaims(jwtToken);
-        return claims.getExpiration().toInstant();
     }
 }
