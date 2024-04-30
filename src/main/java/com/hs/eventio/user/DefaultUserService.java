@@ -1,6 +1,8 @@
 package com.hs.eventio.user;
 
 import com.hs.eventio.auth.AuthDTO;
+import com.hs.eventio.common.exception.ResourceNotFoundException;
+import com.hs.eventio.common.exception.UserRegistrationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,7 @@ class DefaultUserService implements UserService {
     private void verifyEmailIsUnique(String email) {
         var userWithSimilarEmail = userRepository.findUserByEmail(email);
         if (userWithSimilarEmail.isPresent()){
-            throw new RuntimeException("User with similar email exists!");
+            throw new UserRegistrationException("User with similar email exists!");
         }
     }
 
@@ -68,7 +70,8 @@ class DefaultUserService implements UserService {
                             user.getEmail(), user.getPassword(), roleDto,
                             user.getPhoto().getImageUrl());
                 })
-                .orElseThrow();
+                .orElseThrow(() -> new ResourceNotFoundException("User with email: " +
+                        username + " does not exist!"));
     }
 
     @Override
