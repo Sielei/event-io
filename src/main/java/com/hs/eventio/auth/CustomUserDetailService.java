@@ -30,7 +30,7 @@ public class CustomUserDetailService implements UserDetailsService {
             AuthDTO.FindUserResponse userDTO) {
         var grantedAuthorities = new ArrayList<GrantedAuthority>();
         for (var role: userDTO.roles()){
-            grantedAuthorities.add(new SimpleGrantedAuthority(role));
+            grantedAuthorities.add(new SimpleGrantedAuthority(role.authority()));
         }
         return grantedAuthorities;
     }

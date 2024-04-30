@@ -3,7 +3,7 @@ package com.hs.eventio.auth;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class AuthDTO {
@@ -14,7 +14,8 @@ public class AuthDTO {
     public record LoginRequest(String email, String password){}
     public record GetResetTokenResponse(String success, String message){}
     public record GetResetTokenRequest(String email){}
-    public record FindUserResponse(UUID id, String name, String email, String password, List<String> roles,
+    public record RoleDto(Long id, String name, String description, String authority){}
+    public record FindUserResponse(UUID id, String name, String email, String password, Set<RoleDto> roles,
                                    String photoUrl){}
     public record CreatePasswordResetTokenCommand(UUID userId, String token) {
         public static Builder builder() {
@@ -52,4 +53,5 @@ public class AuthDTO {
     public record UpdatePasswordCommand(UUID userId, String newPassword) {}
     public record RefreshToken(String token) {}
     public record UpdatePasswordRequest(String currentPassword, String newPassword) {}
+    public record UpdateUserRequest(String name, String email){}
 }
