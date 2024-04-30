@@ -5,6 +5,7 @@ import com.hs.eventio.common.service.FileUploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -42,7 +43,7 @@ class UserController {
     @Operation(summary = "Update user details")
     @PutMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void updateUser(@PathVariable("userId") UUID userId, @RequestBody AuthDTO.UpdateUserRequest updateUserRequest){
+    void updateUser(@PathVariable("userId") UUID userId, @Valid @RequestBody AuthDTO.UpdateUserRequest updateUserRequest){
         userService.updateUserDetails(userId, updateUserRequest);
     }
 
@@ -52,7 +53,7 @@ class UserController {
                                              @RequestParam("photo") MultipartFile multipartFile) {
         var fileName =fileUploadService.uploadFile(multipartFile);
         return userService.updateUserPhoto(userId, fileName, multipartFile.getContentType(),
-                "/api/v1/users/photo/"+fileName);
+                "/api/v1/users/photo/" + fileName);
     }
 
     @Operation(summary = "Download user photo")

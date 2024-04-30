@@ -52,7 +52,7 @@ class AuthController {
     @PutMapping("/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void updateUserPassword(@RequestAttribute("userId") UUID userId,
-                            AuthDTO.UpdatePasswordRequest updatePasswordRequest){
+                            @Valid @RequestBody AuthDTO.UpdatePasswordRequest updatePasswordRequest){
         authenticationService.updatePassword(userId, updatePasswordRequest);
     }
 
