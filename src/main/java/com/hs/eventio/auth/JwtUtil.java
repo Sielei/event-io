@@ -1,12 +1,12 @@
 package com.hs.eventio.auth;
 
+import com.hs.eventio.common.GlobalDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -17,10 +17,10 @@ class JwtUtil {
     private static final String SECRET = "pYXQiOjEMsnVz5AYXJvbXMNjc2OTgyNTUzfQ";
     private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    public String generateJWTToken(AuthDTO.FindUserResponse userDto){
+    public String generateJWTToken(GlobalDTO.FindUserResponse userDto){
         return Jwts.builder()
                 .issuedAt(Date.from(ZonedDateTime.now().toInstant()))
-                .issuer("Lunar HR")
+                .issuer("Event-io")
                 .claim("userId", userDto.id())
                 .claim("username", userDto.email())
 //                .setExpiration(Date.from(ZonedDateTime.now().plusHours(1).toInstant()))
