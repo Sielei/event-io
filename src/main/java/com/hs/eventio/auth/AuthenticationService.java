@@ -1,5 +1,6 @@
 package com.hs.eventio.auth;
 
+import com.hs.eventio.common.GlobalDTO;
 import com.hs.eventio.common.exception.PasswordValidationException;
 import com.hs.eventio.common.exception.UserAuthenticationException;
 import com.hs.eventio.email.EmailUtil;
@@ -35,7 +36,7 @@ class AuthenticationService {
         this.emailUtil = emailUtil;
     }
 
-    public AuthDTO.LoginResponse login(AuthDTO.LoginRequest loginRequest, HttpServletRequest request) {
+    public GlobalDTO.LoginResponse login(GlobalDTO.LoginRequest loginRequest, HttpServletRequest request) {
         var requestIp = request.getRemoteAddr();
         log.info("Login attempted by user: {} from IP address: {}", loginRequest.email(), requestIp);
         var userDto = userService.findUserByUsername(loginRequest.email());
@@ -49,11 +50,10 @@ class AuthenticationService {
         }
         catch (AuthenticationException authenticationException){
             log.error("Authentication for {} failed because of {}!", userDto.name(), authenticationException.getMessage());
-            log.error("Authentication exception: ", authenticationException);
         }
         if (isAuthenticated){
             var jwtToken = jwtUtil.generateJWTToken(userDto);
-            return new AuthDTO.LoginResponse(jwtToken, userDto.id(), userDto.name(), userDto.email(),
+            return new GlobalDTO.LoginResponse(jwtToken, userDto.id(), userDto.name(), userDto.email(),
                     userDto.photoUrl());
         }
         else {
@@ -63,7 +63,7 @@ class AuthenticationService {
     public void  generatePasswordResetToken(String email) {
         var user = userService.findUserByUsername(email);
         var token = UUID.randomUUID().toString();
-        userService.createPasswordResetToken(AuthDTO.CreatePasswordResetTokenCommand.builder()
+        userService.createPasswordResetToken(GlobalDTO.CreatePasswordResetTokenCommand.builder()
                 .userId(user.id())
                 .token(token)
                 .build());
@@ -75,31 +75,31 @@ class AuthenticationService {
         emailUtil.sendEmail(email, subject, template, properties);
     }
 
-    public void resetPasswordWithResetToken(AuthDTO.ResetPasswordRequest resetPasswordRequest) {
+    public void resetPasswordWithResetToken(GlobalDTO.ResetPasswordRequest resetPasswordRequest) {
         var user = userService.findUserByResetToken(resetPasswordRequest.token());
         var newPassword = bCryptPasswordEncoder.encode(resetPasswordRequest.newPassword());
-        userService.updatePassword(new AuthDTO.UpdatePasswordCommand(user.id(), newPassword));
+        userService.updatePassword(new GlobalDTO.UpdatePasswordCommand(user.id(), newPassword));
     }
 
-    public AuthDTO.RefreshToken getRefreshToken(UUID userId){
+    public GlobalDTO.RefreshToken getRefreshToken(UUID userId){
         var userDto = userService.findUserById(userId);
         //create a new session
         var jwtToken = jwtUtil.generateJWTToken(userDto);
         //return new token
-        return new AuthDTO.RefreshToken(jwtToken);
+        return new GlobalDTO.RefreshToken(jwtToken);
     }
 
-    public void updatePassword(UUID userId, AuthDTO.UpdatePasswordRequest updatePasswordRequest) {
+    public void updatePassword(UUID userId, GlobalDTO.UpdatePasswordRequest updatePasswordRequest) {
         var userDto = userService.findUserById(userId);
         if (!bCryptPasswordEncoder.matches(updatePasswordRequest.currentPassword(), userDto.password())){
             throw new PasswordValidationException("Current password does not match with the password you provided!");
         }
         var newPassword = bCryptPasswordEncoder.encode(updatePasswordRequest.newPassword());
-        var updatePasswordCommand =  new AuthDTO.UpdatePasswordCommand(userDto.id(), newPassword);
+        var updatePasswordCommand =  new GlobalDTO.UpdatePasswordCommand(userDto.id(), newPassword);
         userService.updatePassword(updatePasswordCommand);
     }
-    public AuthDTO.RegisterUserRequest encodeRawPassword(AuthDTO.RegisterUserRequest registerUserRequest){
-        return new AuthDTO.RegisterUserRequest(registerUserRequest.name(), registerUserRequest.email(),
+    public GlobalDTO.RegisterUserRequest encodeRawPassword(GlobalDTO.RegisterUserRequest registerUserRequest){
+        return new GlobalDTO.RegisterUserRequest(registerUserRequest.name(), registerUserRequest.email(),
                 bCryptPasswordEncoder.encode(registerUserRequest.password()));
     }
 }
