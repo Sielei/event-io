@@ -19,11 +19,11 @@ import java.util.Objects;
 
 @Service
 public class FileUploadService {
-    private final Path fileUploadLocation;
+    private Path fileUploadLocation;
     private static final Logger log = LoggerFactory.getLogger(FileUploadService.class);
 
-    public FileUploadService() {
-        this.fileUploadLocation = Paths.get("/uploads").toAbsolutePath().normalize();
+    public void createFileUploadDirectory(String path) {
+        this.fileUploadLocation = Paths.get(path).toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.fileUploadLocation);
         }
@@ -32,7 +32,8 @@ public class FileUploadService {
         }
     }
 
-    public String uploadFile(MultipartFile multipartFile) {
+    public String uploadFile(MultipartFile multipartFile, String path) {
+        createFileUploadDirectory(path);
         var fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
         try {
             var targetLocation = this.fileUploadLocation.resolve(fileName);
@@ -44,7 +45,8 @@ public class FileUploadService {
         return fileName;
     }
 
-    public Resource loadFileAsResource(String fileName) throws MalformedURLException {
+    public Resource loadFileAsResource(String fileName, String path) throws MalformedURLException {
+        createFileUploadDirectory(path);
         var filePath = this.fileUploadLocation.resolve(fileName).normalize();
         var resource = new UrlResource(filePath.toUri());
         if (resource.exists()){
