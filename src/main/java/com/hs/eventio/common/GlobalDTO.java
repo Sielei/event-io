@@ -1,13 +1,18 @@
-package com.hs.eventio.auth;
+package com.hs.eventio.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class AuthDTO {
+public class GlobalDTO {
 
     public record RegisterUserResponse(UUID id, String name, String email, String photoUrl){}
     public record RegisterUserRequest(@NotBlank(message = "Name is required") String name,
@@ -60,4 +65,30 @@ public class AuthDTO {
                                         @NotBlank(message = "New password is required")String newPassword) {}
     public record UpdateUserRequest(@NotBlank(message = "Name is required") String name,
                                     @Email(message = "Email should be valid") String email){}
+    public record CreateEventRequest(String title, String description, String slug, Instant startDate,
+                                     Instant endDate, boolean isPhysicalEvent,
+                                     boolean isFreeEvent, List<Long> topics, UUID venueId){}
+    public record CreateTopicRequest(String name, String description){}
+    public record CreateTopicResponse(Long id, String name, String description, String topicUrl){}
+    public record TopicDto(Long id, String name, String description, String topicUrl){}
+    public record EventPhotoDto(Long id, String imageType, String imageUrl){}
+    public record HostDto(UUID id, String name, String email, String imageUrl){}
+    public record Attendee(UUID id, String name, String email, String imageUrl){}
+    public record CreateEventResponse(UUID id, String title, String description, String slug, String eventLocation,
+                                      String eventCost, List<TopicDto> topics, List<EventPhotoDto> featuredPhotos,
+                                      HostDto host, List<EventPhotoDto> eventPhotos){}
+    public record EventSummary(List<EventPhotoDto> featuredPhotos, String title, String eventLocation,
+                               String eventCost, Instant startDate){}
+    public enum Currency {
+        EUR, GBP, KSH, USD
+    }
+    public record CreateEventTicketRequest(String title, Integer numberOfTickets, Currency currency,
+                                           BigDecimal price, Date ticketClose){}
+    public record CreateEventTicketResponse(UUID id, String title, Integer numberOfTickets,
+                                            Integer numberOfPurchasedTickets, Currency currency,
+                                            BigDecimal price, Date ticketClose){}
+
+    public record PagedCollection<T>(List<T> data, long totalElements, Integer pageNumber, Integer totalPages,
+                                     @JsonProperty("isFirst") boolean isFirst, @JsonProperty("isLast") boolean isLast,
+                                     @JsonProperty("hasNext") boolean hasNext, @JsonProperty("hasPrevious") boolean hasPrevious){}
 }
