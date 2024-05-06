@@ -1,26 +1,26 @@
 package com.hs.eventio.user;
 
-import com.hs.eventio.auth.AuthDTO;
+import com.hs.eventio.common.GlobalDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
 public interface UserService {
-    AuthDTO.RegisterUserResponse registerUser(AuthDTO.RegisterUserRequest registerUserRequest);
+    GlobalDTO.RegisterUserResponse registerUser(GlobalDTO.RegisterUserRequest registerUserRequest);
 
-    AuthDTO.FindUserResponse findUserByUsername(String username);
+    GlobalDTO.FindUserResponse findUserByUsername(String username);
 
-    AuthDTO.FindUserResponse findUserByResetToken(String token);
+    GlobalDTO.FindUserResponse findUserByResetToken(String token);
 
-    void updatePassword(AuthDTO.UpdatePasswordCommand updatePasswordCommand);
+    void updatePassword(GlobalDTO.UpdatePasswordCommand updatePasswordCommand);
 
-    AuthDTO.FindUserResponse findUserById(UUID userId);
+    GlobalDTO.FindUserResponse findUserById(UUID userId);
 
-    void createPasswordResetToken(AuthDTO.CreatePasswordResetTokenCommand build);
+    void createPasswordResetToken(GlobalDTO.CreatePasswordResetTokenCommand build);
 
-    AuthDTO.RegisterUserResponse updateUserPhoto(UUID userId, String imageName, String imageType,
-                                                 String imageUrl);
+    GlobalDTO.RegisterUserResponse updateUserPhoto(UUID userId, MultipartFile multipartFile);
 
-    AuthDTO.RegisterUserResponse findById(UUID userId);
+    GlobalDTO.RegisterUserResponse findById(UUID userId);
 
-    void updateUserDetails(UUID userId, AuthDTO.UpdateUserRequest updateUserRequest);
+    void updateUserDetails(UUID userId, GlobalDTO.UpdateUserRequest updateUserRequest);
 }
