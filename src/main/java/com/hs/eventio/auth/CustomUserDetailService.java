@@ -1,5 +1,6 @@
 package com.hs.eventio.auth;
 
+import com.hs.eventio.common.GlobalDTO;
 import com.hs.eventio.user.UserService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,7 +28,7 @@ public class CustomUserDetailService implements UserDetailsService {
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(
-            AuthDTO.FindUserResponse userDTO) {
+            GlobalDTO.FindUserResponse userDTO) {
         var grantedAuthorities = new ArrayList<GrantedAuthority>();
         for (var role: userDTO.roles()){
             grantedAuthorities.add(new SimpleGrantedAuthority(role.authority()));

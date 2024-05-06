@@ -1,12 +1,15 @@
 package com.hs.eventio.user;
 
-import com.hs.eventio.auth.AuthDTO;
+import com.hs.eventio.common.GlobalDTO;
+import com.hs.eventio.common.config.EventioApplicationConfigData;
 import com.hs.eventio.common.exception.ResourceNotFoundException;
 import com.hs.eventio.common.exception.UserRegistrationException;
+import com.hs.eventio.common.service.FileUploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -19,27 +22,31 @@ import java.util.stream.Collectors;
 class DefaultUserService implements UserService {
     private final UserRepository userRepository;
     private final PasswordResetRepository passwordResetRepository;
+    private final FileUploadService fileUploadService;
+    private final EventioApplicationConfigData eventioApplicationConfigData;
     private static final Logger LOG = LoggerFactory.getLogger(DefaultUserService.class);
 
-    DefaultUserService(UserRepository userRepository, PasswordResetRepository passwordResetRepository) {
+    DefaultUserService(UserRepository userRepository, PasswordResetRepository passwordResetRepository, FileUploadService fileUploadService, EventioApplicationConfigData eventioApplicationConfigData) {
         this.userRepository = userRepository;
         this.passwordResetRepository = passwordResetRepository;
+        this.fileUploadService = fileUploadService;
+        this.eventioApplicationConfigData = eventioApplicationConfigData;
     }
 
     @Transactional
     @Override
-    public AuthDTO.RegisterUserResponse registerUser(AuthDTO.RegisterUserRequest registerUserRequest) {
+    public GlobalDTO.RegisterUserResponse registerUser(GlobalDTO.RegisterUserRequest registerUserRequest) {
         verifyEmailIsUnique(registerUserRequest.email());
         var newUser = userRepository.save(mapRegisterUserRequestToUser(registerUserRequest));
         return mapUserToRegisterUserResponse(newUser);
     }
 
-    private AuthDTO.RegisterUserResponse mapUserToRegisterUserResponse(User user) {
-        return new AuthDTO.RegisterUserResponse(user.getId(), user.getName(), user.getEmail(),
+    private GlobalDTO.RegisterUserResponse mapUserToRegisterUserResponse(User user) {
+        return new GlobalDTO.RegisterUserResponse(user.getId(), user.getName(), user.getEmail(),
                 user.getPhoto().getImageUrl());
     }
 
-    private User mapRegisterUserRequestToUser(AuthDTO.RegisterUserRequest registerUserRequest) {
+    private User mapRegisterUserRequestToUser(GlobalDTO.RegisterUserRequest registerUserRequest) {
 
         return User.builder()
                 .name(registerUserRequest.name())
@@ -62,11 +69,11 @@ class DefaultUserService implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public AuthDTO.FindUserResponse findUserByUsername(String username) {
+    public GlobalDTO.FindUserResponse findUserByUsername(String username) {
         return userRepository.findUserByEmail(username)
                 .map(user -> {
                     var roleDto = mapRolesToRoleDtos(user.getRoles());
-                    return new AuthDTO.FindUserResponse(user.getId(), user.getName(),
+                    return new GlobalDTO.FindUserResponse(user.getId(), user.getName(),
                             user.getEmail(), user.getPassword(), roleDto,
                             user.getPhoto().getImageUrl());
                 })
@@ -75,40 +82,41 @@ class DefaultUserService implements UserService {
     }
 
     @Override
-    public AuthDTO.FindUserResponse findUserByResetToken(String token) {
+    public GlobalDTO.FindUserResponse findUserByResetToken(String token) {
         var passwordResetToken = passwordResetRepository.findByToken(token)
                 .orElseThrow();
         var user = passwordResetToken.getUser();
         return mapUserToFindUserResponse(user);
     }
 
-    private AuthDTO.FindUserResponse mapUserToFindUserResponse(User user) {
-        return new AuthDTO.FindUserResponse(user.getId(), user.getName(), user.getEmail(), user.getPassword(),
+    private GlobalDTO.FindUserResponse mapUserToFindUserResponse(User user) {
+        return new GlobalDTO.FindUserResponse(user.getId(), user.getName(), user.getEmail(), user.getPassword(),
                 mapRolesToRoleDtos(user.getRoles()), user.getPhoto().getImageUrl());
     }
-     private Set<AuthDTO.RoleDto> mapRolesToRoleDtos(Set<Role> roles){
+     private Set<GlobalDTO.RoleDto> mapRolesToRoleDtos(Set<Role> roles){
         return roles.stream()
-                .map(role -> new AuthDTO.RoleDto(role.getId(), role.getName(),
+                .map(role -> new GlobalDTO.RoleDto(role.getId(), role.getName(),
                         role.getDescription(), role.getAuthority()))
                 .collect(Collectors.toSet());
      }
 
     @Transactional
     @Override
-    public void updatePassword(AuthDTO.UpdatePasswordCommand updatePasswordCommand) {
+    public void updatePassword(GlobalDTO.UpdatePasswordCommand updatePasswordCommand) {
         var user = userRepository.findUserById(updatePasswordCommand.userId());
         user.setPassword(updatePasswordCommand.newPassword());
         userRepository.save(user);
     }
 
     @Override
-    public AuthDTO.FindUserResponse findUserById(UUID userId) {
-        return null;
+    public GlobalDTO.FindUserResponse findUserById(UUID userId) {
+        var user = userRepository.findUserById(userId);
+        return mapUserToFindUserResponse(user);
     }
 
     @Transactional
     @Override
-    public void createPasswordResetToken(AuthDTO.CreatePasswordResetTokenCommand passwordResetTokenCommand) {
+    public void createPasswordResetToken(GlobalDTO.CreatePasswordResetTokenCommand passwordResetTokenCommand) {
         var exp = LocalDate.now().plusDays(1);
         var expiry = Date.from(exp.atStartOfDay(ZoneId.systemDefault()).toInstant());
         var user = userRepository.findUserById(passwordResetTokenCommand.userId());
@@ -123,30 +131,32 @@ class DefaultUserService implements UserService {
 
     @Transactional
     @Override
-    public AuthDTO.RegisterUserResponse updateUserPhoto(UUID userId, String imageName, String imageType,
-                                                        String imageUrl) {
+    public GlobalDTO.RegisterUserResponse updateUserPhoto(UUID userId, MultipartFile multipartFile) {
         var user = userRepository.findUserById(userId);
+        var imageType = multipartFile.getContentType();
+        var imageName = fileUploadService.uploadFile(multipartFile,
+                eventioApplicationConfigData.getUserPhotosUploadLocation());
         user.setPhoto(Photo.builder()
                         .imageName(imageName)
                         .imageType(imageType)
-                        .imageUrl(imageUrl)
+                        .imageUrl("/api/v1/users/photo/" + imageName)
                 .build());
         var updatedUser = userRepository.save(user);
-        return new AuthDTO.RegisterUserResponse(updatedUser.getId(), updatedUser.getName(),
+        return new GlobalDTO.RegisterUserResponse(updatedUser.getId(), updatedUser.getName(),
                 updatedUser.getEmail(), updatedUser.getPhoto().getImageUrl());
     }
 
     @Transactional(readOnly = true)
     @Override
-    public AuthDTO.RegisterUserResponse findById(UUID userId) {
+    public GlobalDTO.RegisterUserResponse findById(UUID userId) {
         var user = userRepository.findUserById(userId);
-        return new AuthDTO.RegisterUserResponse(user.getId(), user.getName(), user.getEmail(),
+        return new GlobalDTO.RegisterUserResponse(user.getId(), user.getName(), user.getEmail(),
                 user.getPhoto().getImageUrl());
     }
 
     @Transactional
     @Override
-    public void updateUserDetails(UUID userId, AuthDTO.UpdateUserRequest updateUserRequest) {
+    public void updateUserDetails(UUID userId, GlobalDTO.UpdateUserRequest updateUserRequest) {
         var user = userRepository.findUserById(userId);
         LOG.info("Attempted user details update for user: {}", user.getName());
         user.setName(updateUserRequest.name());
