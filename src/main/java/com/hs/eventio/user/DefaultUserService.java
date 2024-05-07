@@ -2,11 +2,11 @@ package com.hs.eventio.user;
 
 import com.hs.eventio.common.GlobalDTO;
 import com.hs.eventio.common.config.EventioApplicationConfigData;
-import com.hs.eventio.common.exception.ResourceNotFoundException;
 import com.hs.eventio.common.exception.UserRegistrationException;
 import com.hs.eventio.common.service.FileUploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -77,8 +77,8 @@ class DefaultUserService implements UserService {
                             user.getEmail(), user.getPassword(), roleDto,
                             user.getPhoto().getImageUrl());
                 })
-                .orElseThrow(() -> new ResourceNotFoundException("User with email: " +
-                        username + " does not exist!"));
+                .orElseThrow(() -> new UsernameNotFoundException("User with username" +
+                         username + " does not exist"));
     }
 
     @Override
