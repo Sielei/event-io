@@ -13,4 +13,7 @@ class EventConstants {
     public enum EventPhotoType {
         FEATURED, OTHER
     }
+    public enum EventAttendance {
+        LIMITED, UNLIMITED
+    }
 }

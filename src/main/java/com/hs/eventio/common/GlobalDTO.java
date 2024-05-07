@@ -66,8 +66,9 @@ public class GlobalDTO {
     public record UpdateUserRequest(@NotBlank(message = "Name is required") String name,
                                     @Email(message = "Email should be valid") String email){}
     public record CreateEventRequest(String title, String description, String slug, Instant startDate,
-                                     Instant endDate, boolean isPhysicalEvent,
-                                     boolean isFreeEvent, List<Long> topics, UUID venueId){}
+                                     Instant endDate, boolean isPhysicalEvent, boolean isFreeEvent,
+                                     boolean isAttendanceLimited, Integer attendanceLimit,
+                                     List<Long> topics, UUID venueId){}
     public record CreateTopicRequest(String name, String description){}
     public record CreateTopicResponse(Long id, String name, String description, String topicUrl){}
     public record TopicDto(Long id, String name, String description, String topicUrl){}
@@ -75,7 +76,8 @@ public class GlobalDTO {
     public record HostDto(UUID id, String name, String email, String imageUrl){}
     public record Attendee(UUID id, String name, String email, String imageUrl){}
     public record CreateEventResponse(UUID id, String title, String description, String slug, String eventLocation,
-                                      String eventCost, List<TopicDto> topics, List<EventPhotoDto> featuredPhotos,
+                                      String eventCost, String eventAttendance, Integer attendanceLimit,
+                                      List<TopicDto> topics, List<EventPhotoDto> featuredPhotos,
                                       HostDto host, List<EventPhotoDto> eventPhotos){}
     public record EventSummary(List<EventPhotoDto> featuredPhotos, String title, String eventLocation,
                                String eventCost, Instant startDate){}

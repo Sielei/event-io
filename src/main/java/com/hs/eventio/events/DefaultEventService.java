@@ -193,12 +193,14 @@ class DefaultEventService implements EventService {
         var eventHost = new GlobalDTO.HostDto(host.id(), host.name(), host.email(), host.photoUrl());
         return new GlobalDTO.CreateEventResponse(event.getId(), event.getTitle(), event.getDescription(),
                 event.getSlug(), event.getEventLocation().toString(), event.getEventCost().toString(),
-                topics, featuredPhotos, eventHost, eventPhotos);
+                event.getEventAttendance().toString(), event.getAttendanceLimit(), topics, featuredPhotos,
+                eventHost, eventPhotos);
     }
 
     private Event mapEventRequestToEvent(GlobalDTO.CreateEventRequest createEventRequest, UUID userId) {
         var eventLocation = createEventRequest.isPhysicalEvent() ? EventConstants.EventLocation.PHYSICAL : EventConstants.EventLocation.VIRTUAL;
         var eventCost = createEventRequest.isFreeEvent() ? EventConstants.EventCost.FREE : EventConstants.EventCost.PAID;
+        var eventAttendance = createEventRequest.isAttendanceLimited() ? EventConstants.EventAttendance.LIMITED : EventConstants.EventAttendance.UNLIMITED;
         var topics = createEventRequest.topics().stream()
                 .map(topicRepository::findTopicById)
                 .collect(Collectors.toSet());
@@ -209,6 +211,8 @@ class DefaultEventService implements EventService {
                 .eventStatus(EventConstants.EventStatus.ACTIVE)
                 .eventLocation(eventLocation)
                 .eventCost(eventCost)
+                .eventAttendance(eventAttendance)
+                .attendanceLimit(createEventRequest.attendanceLimit())
                 .topics(topics)
                 .host(userId)
                 .startDate(createEventRequest.startDate())

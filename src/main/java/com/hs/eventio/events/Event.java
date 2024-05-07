@@ -19,6 +19,7 @@ class Event {
     @Column(name = "id", nullable = false)
     private UUID id;
     private String title;
+    @Column(columnDefinition = "text")
     private String description;
     private String slug;
     private String eventUrl;
@@ -28,6 +29,9 @@ class Event {
     private EventConstants.EventLocation eventLocation;
     @Enumerated(value = EnumType.STRING)
     private EventConstants.EventCost eventCost;
+    @Enumerated(value = EnumType.STRING)
+    private EventConstants.EventAttendance eventAttendance;
+    private Integer attendanceLimit;
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EventPhoto> eventPhotos = new LinkedHashSet<>();
 
