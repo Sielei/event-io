@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -69,16 +70,14 @@ class DefaultUserService implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public GlobalDTO.FindUserResponse findUserByUsername(String username) {
+    public Optional<GlobalDTO.FindUserResponse> findUserByUsername(String username) {
         return userRepository.findUserByEmail(username)
                 .map(user -> {
                     var roleDto = mapRolesToRoleDtos(user.getRoles());
                     return new GlobalDTO.FindUserResponse(user.getId(), user.getName(),
                             user.getEmail(), user.getPassword(), roleDto,
                             user.getPhoto().getImageUrl());
-                })
-                .orElseThrow(() -> new UsernameNotFoundException("User with username" +
-                         username + " does not exist"));
+                });
     }
 
     @Override

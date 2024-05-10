@@ -23,7 +23,9 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var userDTO = userService.findUserByUsername(username);
+        var userDTO = userService.findUserByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username" +
+                        username + " does not exist"));
         return new User(userDTO.name(), userDTO.password(), getAuthorities(userDTO));
     }
 

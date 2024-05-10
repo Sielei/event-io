@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,9 @@ class AuthenticationService {
     public GlobalDTO.LoginResponse login(GlobalDTO.LoginRequest loginRequest, HttpServletRequest request) {
         var requestIp = request.getRemoteAddr();
         log.info("Login attempted by user: {} from IP address: {}", loginRequest.email(), requestIp);
-        var userDto = userService.findUserByUsername(loginRequest.email());
+        var userDto = userService.findUserByUsername(loginRequest.email())
+                .orElseThrow(() -> new UserAuthenticationException("User with username " +
+                        loginRequest.email() + " does not exist"));
         var authenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.email(),
                 loginRequest.password());
         var isAuthenticated = false;
@@ -61,7 +64,9 @@ class AuthenticationService {
         }
     }
     public void  generatePasswordResetToken(String email) {
-        var user = userService.findUserByUsername(email);
+        var user = userService.findUserByUsername(email)
+                .orElseThrow(() -> new UserAuthenticationException("User with username" +
+                        email + " does not exist"));
         var token = UUID.randomUUID().toString();
         userService.createPasswordResetToken(GlobalDTO.CreatePasswordResetTokenCommand.builder()
                 .userId(user.id())

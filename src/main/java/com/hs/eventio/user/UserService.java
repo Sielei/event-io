@@ -3,12 +3,13 @@ package com.hs.eventio.user;
 import com.hs.eventio.common.GlobalDTO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
     GlobalDTO.RegisterUserResponse registerUser(GlobalDTO.RegisterUserRequest registerUserRequest);
 
-    GlobalDTO.FindUserResponse findUserByUsername(String username);
+    Optional<GlobalDTO.FindUserResponse> findUserByUsername(String username);
 
     GlobalDTO.FindUserResponse findUserByResetToken(String token);
 
