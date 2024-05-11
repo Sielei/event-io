@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -49,9 +48,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        var location = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/errors/validation-error")
+                .build().toUri();
         var problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
         problemDetail.setTitle("Validation Error");
-        problemDetail.setType(URI.create("ValidationError"));
+        problemDetail.setType(location);
         problemDetail.setProperty("timestamp", DateTimeFormatter
                 .ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
                 .format(LocalDateTime.now()));
