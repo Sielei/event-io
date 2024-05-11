@@ -41,8 +41,7 @@ class AuthenticationService {
         var requestIp = request.getRemoteAddr();
         log.info("Login attempted by user: {} from IP address: {}", loginRequest.email(), requestIp);
         var userDto = userService.findUserByUsername(loginRequest.email())
-                .orElseThrow(() -> new UserAuthenticationException("User with username " +
-                        loginRequest.email() + " does not exist"));
+                .orElseThrow(() -> new UserAuthenticationException("Failed to authenticate user! Username or password is incorrect"));
         var authenticationToken = new UsernamePasswordAuthenticationToken(loginRequest.email(),
                 loginRequest.password());
         var isAuthenticated = false;
@@ -65,7 +64,7 @@ class AuthenticationService {
     }
     public void  generatePasswordResetToken(String email) {
         var user = userService.findUserByUsername(email)
-                .orElseThrow(() -> new UserAuthenticationException("User with username" +
+                .orElseThrow(() -> new UserAuthenticationException("Email: " +
                         email + " does not exist"));
         var token = UUID.randomUUID().toString();
         userService.createPasswordResetToken(GlobalDTO.CreatePasswordResetTokenCommand.builder()
@@ -97,7 +96,7 @@ class AuthenticationService {
     public void updatePassword(UUID userId, GlobalDTO.UpdatePasswordRequest updatePasswordRequest) {
         var userDto = userService.findUserById(userId);
         if (!bCryptPasswordEncoder.matches(updatePasswordRequest.currentPassword(), userDto.password())){
-            throw new PasswordValidationException("Current password does not match with the password you provided!");
+            throw new UserAuthenticationException("Current password does not match with the password you provided!");
         }
         var newPassword = bCryptPasswordEncoder.encode(updatePasswordRequest.newPassword());
         var updatePasswordCommand =  new GlobalDTO.UpdatePasswordCommand(userDto.id(), newPassword);
