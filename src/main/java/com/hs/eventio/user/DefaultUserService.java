@@ -2,6 +2,7 @@ package com.hs.eventio.user;
 
 import com.hs.eventio.common.GlobalDTO;
 import com.hs.eventio.common.config.EventioApplicationConfigData;
+import com.hs.eventio.common.exception.UserAuthenticationException;
 import com.hs.eventio.common.exception.UserRegistrationException;
 import com.hs.eventio.common.service.FileUploadService;
 import org.slf4j.Logger;
@@ -83,7 +84,11 @@ class DefaultUserService implements UserService {
     @Override
     public GlobalDTO.FindUserResponse findUserByResetToken(String token) {
         var passwordResetToken = passwordResetRepository.findByToken(token)
-                .orElseThrow();
+                .orElseThrow(() -> new UserAuthenticationException("The reset token: " + token + " is not valid!"));
+        if (passwordResetToken.isUsed() || !passwordResetToken.getExpiry().after(new Date(System.currentTimeMillis()))){
+            throw new UserAuthenticationException("The token: " + passwordResetToken.getToken() +
+                    " is expired or already used!");
+        }
         var user = passwordResetToken.getUser();
         return mapUserToFindUserResponse(user);
     }
